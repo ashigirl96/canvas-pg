@@ -3,7 +3,7 @@
 
 import { Path } from '../../services/PictureService'
 
-export class PathWithBoundary {
+export class PathBoundary {
   private readonly originalMinX: number
   private readonly originalMaxX: number
   private readonly originalMinY: number
@@ -42,4 +42,10 @@ export class PathWithBoundary {
   get maxY(): number {
     return this.originalMaxY + this.path.offsetY
   }
+}
+
+export type PathWithBoundary = Path & { boundary?: PathBoundary }
+
+export function getPathBoundary(path: PathWithBoundary): PathBoundary {
+  return path.boundary ?? (path.boundary = new PathBoundary(path))
 }
