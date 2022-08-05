@@ -73,6 +73,7 @@ export class Canvas extends React.Component<{}, {}> {
     // 実行しない
     if (elem === this.canvasElement) return
 
+    // pointerdownとかpointermoveのイベントリスナを一旦クリーンする
     const { canvasCleanUpHandler } = this
     if (canvasCleanUpHandler != null) {
       canvasCleanUpHandler()
@@ -88,6 +89,7 @@ export class Canvas extends React.Component<{}, {}> {
 
     const unSubscribers = [
       // addEventListener(elem, 'wheel', this.handleWheel.bind(this)),
+      // iPadブラウザのデフォジェスチャー操作が無効になる
       addEventListener(elem, 'touchmove', (event) => event.preventDefault()),
       // 筆がタブレットについたとき
       addEventListener(elem, 'pointerdown', this.handlePointerDown.bind(this)),
@@ -115,6 +117,7 @@ export class Canvas extends React.Component<{}, {}> {
     }
   }
 
+  // canvasとかの画面サイズ調整してる。初期値的な感じ
   private handleResize() {
     const ce = this.canvasElement
     const parent = this.parentElement
