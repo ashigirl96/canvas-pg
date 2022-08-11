@@ -13,7 +13,6 @@ export function toPointer(event: PointerEvent): Pointer {
 }
 
 export function pushPoint(points: Point[] | undefined, point: Point) {
-  console.log(`before pushPoint > ${JSON.stringify(points)}`)
   if (!points) return
 
   // ペンが止まってるときに無駄に追加しないようにしてる
@@ -27,5 +26,4 @@ export function pushPoint(points: Point[] | undefined, point: Point) {
 
   // やりたいことはここで、pointsにpointを追加する
   points.push(point)
-  console.log(`after pushPoint > ${JSON.stringify(points)}`)
 }

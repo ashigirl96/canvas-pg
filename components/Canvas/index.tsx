@@ -48,7 +48,7 @@ export class Canvas extends React.Component<{}, {}> {
   // removeEventListener群
   private canvasCleanUpHandler: (() => void) | null = null
 
-  // TODO: これbindするとどうなるの？
+  // thisでbindする（環境をthisにする）ので、setCanvasElementは別にクラスメソッドじゃなくても良いが、setCanvasElement内でthisを使ってるのでインスタンスメソッドとして定義している方が都合が良さそう
   private canvasRef = this.setCanvasElement.bind(this)
 
   componentWillUnmount() {
@@ -64,6 +64,7 @@ export class Canvas extends React.Component<{}, {}> {
     )
   }
 
+  // コンポーネントのrefに渡されたときに、実DOMが渡される
   setCanvasElement(elem: HTMLCanvasElement | null) {
     // canvasが見つからないならなにもしない
     if (elem === null) {
@@ -207,13 +208,11 @@ export class Canvas extends React.Component<{}, {}> {
 
     // TODO: なにこれ
     this.canvasElement?.setPointerCapture(event.pointerId)
-    console.log(`toPointer ${JSON.stringify(toPointer(event))}`)
     // this.activePointers.set(event.pointerId, toPointer(event))
 
     // const p = this.getPoint(event)
     const point = toPointer(event)
     const p = { x: point.clientX, y: point.clientY }
-    console.log(`down getPoint ${JSON.stringify(p)}`)
     if (p) {
       this.drawingPath = {
         id: generateId(),
