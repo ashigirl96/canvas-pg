@@ -16,7 +16,7 @@ const Container: React.FC<ContainerProps> = ({ children }) => {
 const Home: NextPage = () => {
   return (
     <Container>
-      <div className="w-full h-full overflow-hidden relative">
+      <div className="w-full h-full overflow-hidden bg-blue-200">
         {/*<h1 className="text-3xl font-bold underline">Hello world!</h1>*/}
         <Canvas />
       </div>

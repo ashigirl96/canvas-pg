@@ -58,8 +58,8 @@ export class Canvas extends React.Component<{}, {}> {
   render() {
     return (
       <>
-        {/*TODO: なんでbindしたやつをrefに渡せる？*/}
-        <canvas ref={this.canvasRef}></canvas>
+        {/* refを渡すと、実DOMを引数にわたすコールバック */}
+        <canvas ref={this.canvasRef} className="bg-white"></canvas>
       </>
     )
   }
@@ -124,17 +124,17 @@ export class Canvas extends React.Component<{}, {}> {
     const parent = this.parentElement
     if (ce == null || parent == null) return
 
-    const rect = parent.getBoundingClientRect() // TODO: このメソッドなんだっけ
-    this.offsetLeft = rect.left // TODO これなに
-    this.offsetTop = rect.top
+    const rect = parent.getBoundingClientRect()
+    this.offsetLeft = rect.left // viewportからのparentの左端までの距離
+    this.offsetTop = rect.top // viewportからのparentのtopまでの距離
     this.width = rect.width
     this.height = rect.height
-    this.widthPP = rect.width * this.dpr // TODO: width * dprするとどうなるの
+    this.widthPP = rect.width * this.dpr // 物理ピクセルにする
     this.heightPP = rect.height * this.dpr
-    ce.width = this.widthPP
+    ce.width = this.widthPP // キャンパスを物理ピクセルの幅にする（ボケ防止？）
     ce.height = this.heightPP
-    ce.style.width = `${rect.width}px`
-    ce.style.height = `${rect.height}px`
+    ce.style.width = `${rect.width}px` // レンダリングサイズを親と同じサイズにする
+    ce.style.height = `${rect.height}px` // レンダリングサイズを親と同じサイズにする
 
     this.draw()
   }
@@ -145,7 +145,8 @@ export class Canvas extends React.Component<{}, {}> {
 
     const { scrollLeft, scrollTop, dpr, drawingPath } = this
 
-    ctx.clearRect(0, 0, this.widthPP, this.heightPP) // TODO: なにこれ
+    // (0, 0)から(widthPP, widthPP)の長方形を消す
+    ctx.clearRect(0, 0, this.widthPP, this.heightPP)
 
     ctx.lineCap = 'round' // TODO: なんだっけ
     ctx.lineJoin = 'round' // TODO: なんだっけ
@@ -203,12 +204,14 @@ export class Canvas extends React.Component<{}, {}> {
     // 複数のactiveな接地面があるとなにもしない
     // if (this.activePointers.size >= 2) return
 
-    // TODO: なにこれ
+    // https://developer.mozilla.org/ja/docs/Web/API/Pointer_events#%E3%83%9C%E3%82%BF%E3%83%B3%E3%81%AE%E7%8A%B6%E6%85%8B%E3%81%AE%E5%88%A4%E6%96%AD
+    // ボタンの状態の判断
     if (event.button > 1) return
 
-    // TODO: なにこれ
+    // これから、このpointerIdに対応したeventをこれから使っていくぞ
     this.canvasElement?.setPointerCapture(event.pointerId)
-    // this.activePointers.set(event.pointerId, toPointer(event))
+    console.log(event.pointerId)
+    this.activePointers.set(event.pointerId, toPointer(event))
 
     // const p = this.getPoint(event)
     const point = toPointer(event)
@@ -273,6 +276,7 @@ export class Canvas extends React.Component<{}, {}> {
     if (drawingPath === null) return
 
     this.drawingPath = null
+    // 複数のパスを追加してる
     if (drawingPath.points.length >= 1) {
       this.doOperation({ type: 'add', paths: [drawingPath] })
     }
@@ -286,7 +290,7 @@ export class Canvas extends React.Component<{}, {}> {
     // if (this.drawingService.canRedo.value !== canRedo) this.drawingService.canRedo.next(canRedo)
   }
 
-  // TODO: なにこれ
+  // pathの追加、消しゴム、移動などする
   private doOperation(operation: Operation, redo: boolean = false) {
     this.doneOperationStack.push(operation)
     if (!redo) this.undoneOperationStack = []
@@ -318,6 +322,7 @@ export class Canvas extends React.Component<{}, {}> {
     this.tickDraw()
   }
 
+  // やってることは、pathの追加
   private addPathsInternal(paths: Path[]) {
     addPaths(this.paths, paths)
     // TODO: impl
@@ -334,7 +339,6 @@ export class Canvas extends React.Component<{}, {}> {
       // アクティブとされてるpointerが現在さわってるpointerと違った場合はなにもしない
       // if (pointer.id !== event.pointerId) return undefined
 
-      // TODO: clientXとoffsetLeftがなんやっけ
       const rawX = pointer.clientX - this.offsetLeft
       const rawY = pointer.clientY - this.offsetTop
 
