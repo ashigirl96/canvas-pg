@@ -9,15 +9,10 @@ export function drawPath(
   scale: number,
   dx: number,
   dy: number,
-  isDarkMode: boolean,
 ) {
   // pathに軌跡がなければ何もかかない
   if (points.length === 0) return
 
-  // TODO: impl
-  // const color = isDarkMode ? transformColorForDarkMode(originalColor) : originalColor
-
-  // TODO: なんでこれでいい感じになる？
   ctx.lineWidth = width * scale * dpr
   ctx.strokeStyle = originalColor
   let first = true
@@ -26,7 +21,6 @@ export function drawPath(
   // 一点しか実装されてないとき、丸を書く
   if (points.length === 1) {
     const { x, y } = points[0]
-    // TODO: なにを実装してるの
     const realX = ((x + offsetX + dx) * scale - scrollLeft) * dpr
     const realY = ((y + offsetY + dy) * scale - scrollTop) * dpr
     ctx.fillStyle = originalColor
@@ -55,7 +49,7 @@ export function drawPath(
       }
     }
   } else {
-    for (const { x, y } of points) {
+    points.forEach(({ x, y }) => {
       const realX = (x * scale - scrollLeft) * dpr
       const realY = (y * scale - scrollTop) * dpr
       if (first) {
@@ -64,7 +58,7 @@ export function drawPath(
       } else {
         ctx.lineTo(realX, realY)
       }
-    }
+    })
     ctx.stroke() // TODO: なんだっけ
   }
 }

@@ -7,6 +7,7 @@ import { Pointer, pushPoint, toPointer } from './pointer'
 import { generateId } from '../../utils/generateid'
 import { Operation } from './operation'
 import { addPaths } from './path'
+import { GestureInfo } from './gesture_info'
 
 export class Canvas extends React.Component<{}, {}> {
   private canvasElement: HTMLCanvasElement | null = null // canvas
@@ -50,6 +51,8 @@ export class Canvas extends React.Component<{}, {}> {
 
   // thisでbindする（環境をthisにする）ので、setCanvasElementは別にクラスメソッドじゃなくても良いが、setCanvasElement内でthisを使ってるのでインスタンスメソッドとして定義している方が都合が良さそう
   private canvasRef = this.setCanvasElement.bind(this)
+
+  private gestureInfo: GestureInfo | null = null
 
   componentWillUnmount() {
     this.cleanUpCanvas()
@@ -104,16 +107,15 @@ export class Canvas extends React.Component<{}, {}> {
       // addEventListener(document, 'paste', this.handlePaste.bind(this))
     ]
 
-    // const resizeObserver = new ResizeObserver(() => this.handleResizeWithThrottling())
-    // TODO: 何してるの
-    const resizeObserver = new ResizeObserver(() => console.log('resize'))
-    // TODO: この関数なに
+    const resizeObserver = new ResizeObserver(() =>
+      this.handleResizeWithThrottling(),
+    )
+    // parentがresizeしたときにthis.handleResizeWithThrottling()が発火する
     resizeObserver.observe(parent!)
 
     this.canvasCleanUpHandler = () => {
       // unSubscriberが動くとどうなるの？
       unSubscribers.forEach((f) => f())
-      // TODO: この関数なに
       resizeObserver.disconnect()
     }
   }
@@ -139,6 +141,19 @@ export class Canvas extends React.Component<{}, {}> {
     this.draw()
   }
 
+  // ResizeObserverで画面サイズが検知されたときに、0.3秒後にhandleResizeが実行する
+  private handleResizeWithThrottling() {
+    // 0.3秒以内に連続的に画面サイズをするときにhandleResizeがめっちゃスタックされてしまうから、画面サイズしてる最中はスタックされないようにしてる
+    if (this.tickingResize) return
+
+    this.tickingResize = true
+    // 0.3秒後に実行される
+    setTimeout(() => {
+      this.handleResize()
+      this.tickingResize = false
+    }, 300)
+  }
+
   private draw() {
     const ctx = this.renderingContext
     if (ctx === null) return
@@ -158,6 +173,7 @@ export class Canvas extends React.Component<{}, {}> {
     const maxXOnScreen = (this.width + scrollLeft) / scale
     const maxYOnScreen = (this.height + scrollTop) / scale
 
+    // すべてのパス（線）に対して、drawする
     for (const path of this.paths.values()) {
       const b = getPathBoundary(path)
       if (
@@ -182,12 +198,13 @@ export class Canvas extends React.Component<{}, {}> {
       //   dy = currentLasso.accumulatedOffsetY
       // }
 
-      let isDarkMode = false // あとで書き換える
-      drawPath(ctx, path, scrollLeft, scrollTop, dpr, scale, dx, dy, isDarkMode)
+      drawPath(ctx, path, scrollLeft, scrollTop, dpr, scale, dx, dy)
     }
 
-    if (drawingPath !== null) {
-      drawPath(ctx, drawingPath, scrollLeft, scrollTop, dpr, scale, 0, 0, false)
+    // 現在書いてるpath
+    const isDrawing = drawingPath !== null
+    if (isDrawing) {
+      drawPath(ctx, drawingPath, scrollLeft, scrollTop, dpr, scale, 0, 0)
     }
 
     // if (currentLasso != null) {
@@ -242,18 +259,42 @@ export class Canvas extends React.Component<{}, {}> {
 
     // const p = this.getPoint(event)
     const point = toPointer(event)
-    const p = { x: point.clientX, y: point.clientY }
-    if (p) {
-      const { drawingPath } = this
-      if (drawingPath) {
-        pushPoint(drawingPath.points, p)
-        this.tickDraw()
+
+    const actualCurrentTool = 'pen'
+
+    switch (actualCurrentTool) {
+      case 'pen': {
+        const p = { x: point.clientX, y: point.clientY }
+        if (p) {
+          const { drawingPath } = this
+          if (drawingPath) {
+            pushPoint(drawingPath.points, p)
+            this.tickDraw()
+          }
+        }
+        break
+      }
+      default: {
+        // const [p1, p2] = this.getPointsForPanning()
+        console.log('gesture...!')
+        break
       }
     }
+
     // TODO: impl eraser
     // TODO: impl lasso
     // TODO: impl default
   }
+
+  // private getPointsForPanning(): [Point, Point] {
+  //   const points: Point[] = []
+  //   // const point = toPointer(event)
+  //   // const p = { x: point.clientX, y: point.clientY }
+  //
+  //   for (const x of ) {
+  //
+  //   }
+  // }
 
   private handlePointerUp(event: PointerEvent) {
     // if (!this.activePointers.has(event.pointerId)) return
