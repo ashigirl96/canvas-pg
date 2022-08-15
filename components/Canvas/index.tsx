@@ -237,7 +237,7 @@ export class Canvas extends React.Component<{}, {}> {
       this.drawingPath = {
         id: generateId(),
         color: 'black',
-        width: 11,
+        width: 1,
         points: [p],
         isBezier: false,
         offsetX: 0,
