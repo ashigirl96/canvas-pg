@@ -219,7 +219,7 @@ export class Canvas extends React.Component<{}, {}> {
   // ペンが接地面についたとき
   private handlePointerDown(event: PointerEvent) {
     // 複数のactiveな接地面があるとなにもしない
-    // if (this.activePointers.size >= 2) return
+    if (this.activePointers.size >= 2) return
 
     // https://developer.mozilla.org/ja/docs/Web/API/Pointer_events#%E3%83%9C%E3%82%BF%E3%83%B3%E3%81%AE%E7%8A%B6%E6%85%8B%E3%81%AE%E5%88%A4%E6%96%AD
     // ボタンの状態の判断
@@ -227,12 +227,9 @@ export class Canvas extends React.Component<{}, {}> {
 
     // これから、このpointerIdに対応したeventをこれから使っていくぞ
     this.canvasElement?.setPointerCapture(event.pointerId)
-    console.log(event.pointerId)
     this.activePointers.set(event.pointerId, toPointer(event))
 
-    // const p = this.getPoint(event)
-    const point = toPointer(event)
-    const p = { x: point.clientX, y: point.clientY }
+    const p = this.getPoint(event)
     if (p) {
       this.drawingPath = {
         id: generateId(),
@@ -252,19 +249,16 @@ export class Canvas extends React.Component<{}, {}> {
   private handlePointerMove(event: PointerEvent) {
     // handlePointerDownで設置したときのpointerIdが違う場合は虫する
     // 多分、Apple pencilで書き始めたときに指で画面をなぞったときに変な感じにしないため
-    // if (!this.activePointers.has(event.pointerId)) return
+    if (!this.activePointers.has(event.pointerId)) return
 
     // 書いた座標追加
-    // this.activePointers.set(event.pointerId, toPointer(event))
-
-    // const p = this.getPoint(event)
-    const point = toPointer(event)
+    this.activePointers.set(event.pointerId, toPointer(event))
 
     const actualCurrentTool = 'pen'
 
     switch (actualCurrentTool) {
       case 'pen': {
-        const p = { x: point.clientX, y: point.clientY }
+        const p = this.getPoint(event)
         if (p) {
           const { drawingPath } = this
           if (drawingPath) {
@@ -297,11 +291,9 @@ export class Canvas extends React.Component<{}, {}> {
   // }
 
   private handlePointerUp(event: PointerEvent) {
-    // if (!this.activePointers.has(event.pointerId)) return
+    if (!this.activePointers.has(event.pointerId)) return
 
-    const point = toPointer(event)
-    const p = { x: point.clientX, y: point.clientY }
-    // const p = this.getPoint(event)
+    const p = this.getPoint(event)
     if (p) {
       pushPoint(this.drawingPath?.points, p)
       // TODO: impl
@@ -309,6 +301,10 @@ export class Canvas extends React.Component<{}, {}> {
       //   smoothPath(this.drawingPath, this.drawingService.scale.value)
       // }
       this.addDrawingPath()
+    }
+    this.activePointers.delete(event.pointerId)
+    if (this.canvasElement!.hasPointerCapture(event.pointerId)) {
+      this.canvasElement!.releasePointerCapture(event.pointerId)
     }
   }
 
@@ -378,7 +374,7 @@ export class Canvas extends React.Component<{}, {}> {
       // if (palmRejection && pointer.type === 'touch') continue
 
       // アクティブとされてるpointerが現在さわってるpointerと違った場合はなにもしない
-      // if (pointer.id !== event.pointerId) return undefined
+      if (pointer.id !== event.pointerId) return undefined
 
       const rawX = pointer.clientX - this.offsetLeft
       const rawY = pointer.clientY - this.offsetTop
