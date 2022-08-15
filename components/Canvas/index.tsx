@@ -298,8 +298,11 @@ export class Canvas extends React.Component<{}, {}> {
 
     const p = this.getPoint(event)
     if (p) {
+      // handlePointerDownで初期化したdrawingPath
+      // handlePointerMoveでdrawingPath.pointsに座標を追加する
+      // handlePointerUpでdrawingPath.pointsに座標を追加する
       pushPoint(this.drawingPath?.points, p)
-      // TODO: impl
+      // smoothPathで、パスを滑らかにする
       // if (this.experimentalSettings.value.disableSmoothingPaths !== true) {
       //   smoothPath(this.drawingPath, this.drawingService.scale.value)
       // }
@@ -336,6 +339,7 @@ export class Canvas extends React.Component<{}, {}> {
     if (!redo) this.undoneOperationStack = []
     this.checkOperationStack()
 
+    // this.pathsにdrawingPathを追加する
     this.addPathsInternal(operation.paths)
     // switch (operation.type) {
     //   case 'add':
@@ -394,7 +398,7 @@ export class Canvas extends React.Component<{}, {}> {
     return undefined
   }
 
-  // TODO: なにこれ
+  // 滑らかにdrawを実行する
   private tickDraw() {
     if (this.tickingDraw) return
 
