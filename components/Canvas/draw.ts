@@ -2,6 +2,7 @@ import { Path } from '../../services/PictureService'
 
 export function drawPath(
   ctx: CanvasRenderingContext2D,
+  // Path.widthはペンの太さ
   { width, color: originalColor, points, isBezier, offsetX, offsetY }: Path,
   scrollLeft: number,
   scrollTop: number,

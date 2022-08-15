@@ -176,6 +176,9 @@ export class Canvas extends React.Component<{}, {}> {
     // すべてのパス（線）に対して、drawする
     for (const path of this.paths.values()) {
       const b = getPathBoundary(path)
+      // 無駄なパスをdrawしないようにする
+      // パスの最小値がスクリーンの最大値より大きければ表示しない
+      // パスの最大値がスクリーンの最小値より小さければ表示しない
       if (
         b.minX > maxXOnScreen ||
         b.minY > maxYOnScreen ||
@@ -234,7 +237,7 @@ export class Canvas extends React.Component<{}, {}> {
       this.drawingPath = {
         id: generateId(),
         color: 'black',
-        width: 1,
+        width: 11,
         points: [p],
         isBezier: false,
         offsetX: 0,

@@ -12,10 +12,10 @@ export class PathBoundary {
 
   constructor(path: Path) {
     this.path = path
-    let minX = Number.NEGATIVE_INFINITY
-    let maxX = Number.POSITIVE_INFINITY
-    let minY = Number.NEGATIVE_INFINITY
-    let maxY = Number.POSITIVE_INFINITY
+    let minX = Number.POSITIVE_INFINITY
+    let minY = Number.POSITIVE_INFINITY
+    let maxX = Number.NEGATIVE_INFINITY
+    let maxY = Number.NEGATIVE_INFINITY
 
     const w2 = path.width / 2 // TODO: なにこれ
     path.points.forEach(({ x, y }) => {
